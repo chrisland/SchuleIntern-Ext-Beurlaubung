@@ -1,0 +1,83 @@
+{
+  "name": "Beurlaubung",
+  "uniqid": "ext.zwiebelgasse.beurlaubung",
+  "version": "1",
+
+  "requiredVersion": "1.4.3",
+
+  "menu": {
+    "categorie": "1",
+    "icon": "fa fas fa-sun",
+    "params": ""
+  },
+
+  "adminGroupName": "Admin_Ext_Beurlaubung",
+  "aclGroupName": "ext_beurlaubung",
+
+
+  "submenu": [
+    {
+      "title": "Beurlaubung",
+      "icon": "fa fa-sun",
+      "url": {
+        "page": "ext_beurlaubung",
+        "params": {
+          "view": "default"
+        }
+      }
+    },
+
+    {
+      "title": "Einstellungen",
+      "icon": "fa fa-cogs",
+      "admin": true,
+      "url": {
+        "page": "ext_beurlaubung",
+        "params": {
+          "view": "settings",
+          "admin": "true"
+        }
+      }
+    },
+    {
+      "title": "ACL",
+      "icon": "fa fa-user-shield",
+      "admin": true,
+      "url": {
+        "page": "ext_beurlaubung",
+        "params": {
+          "view": "acl",
+          "admin": "true"
+        }
+      }
+    },
+    {
+      "title": "Liste",
+      "icon": "fa fa-list",
+      "admin": true,
+      "url": {
+        "page": "ext_beurlaubung",
+        "params": {
+          "view": "list",
+          "admin": "true"
+        }
+      }
+    },
+    {
+      "title": "Offen",
+      "icon": "fa fa-list",
+      "admin": true,
+      "url": {
+        "page": "ext_beurlaubung",
+        "params": {
+          "view": "open",
+          "admin": "true"
+        }
+      }
+    }
+
+  ]
+
+
+
+}
