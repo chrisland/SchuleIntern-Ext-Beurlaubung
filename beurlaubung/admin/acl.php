@@ -23,7 +23,7 @@ class extBeurlaubungAdminAcl extends AbstractPage {
         }
 
 		$this->render([
-			"tmplHTML" => '<div class="box"><div class="box-body"><div id=app></div></div></div>',
+			"tmplHTML" => '<div class="box"><div class="box-body"><h4 class="text-orange">Antrag Stellen:</h4><div id=app></div></div></div>',
 			"scripts" => [
 				PATH_COMPONENTS.'system/adminAcl/dist/main.js'
 			],

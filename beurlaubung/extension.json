@@ -1,9 +1,9 @@
 {
   "name": "Beurlaubung",
   "uniqid": "ext.zwiebelgasse.beurlaubung",
-  "version": "1",
+  "version": "2",
 
-  "requiredVersion": "1.4.3",
+  "requiredVersion": "1.5.0",
 
   "menu": {
     "categorie": "1",
@@ -17,7 +17,7 @@
 
   "submenu": [
     {
-      "title": "Beurlaubung",
+      "title": "Anträge",
       "icon": "fa fa-sun",
       "url": {
         "page": "ext_beurlaubung",
@@ -26,6 +26,8 @@
         }
       }
     },
+
+
 
     {
       "title": "Einstellungen",
@@ -64,18 +66,16 @@
       }
     },
     {
-      "title": "Offen",
+      "title": "Offen Anträge",
       "icon": "fa fa-list",
-      "admin": true,
+      "acl": ["isTeacher"],
       "url": {
         "page": "ext_beurlaubung",
         "params": {
-          "view": "open",
-          "admin": "true"
+          "view": "open"
         }
       }
     }
-
   ]
 
 

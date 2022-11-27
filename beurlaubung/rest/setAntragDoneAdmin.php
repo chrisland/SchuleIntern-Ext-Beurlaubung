@@ -40,14 +40,15 @@ class setAntragDoneAdmin extends AbstractRest {
             ];
         }
 
-        $info = (int)$input['info'];
 
+        $doneInfo = trim(nl2br($input['doneInfo']));
+        $doneInfoIntern = trim(nl2br($input['doneInfoIntern']));
 
 
 
         include_once PATH_EXTENSION . 'models' . DS . 'Antrag.class.php';
 
-        if ( extBeurlaubungModelAntrag::setDone($id, $status, $info, $userID) ) {
+        if ( extBeurlaubungModelAntrag::setDone($id, $status, $doneInfo, $userID, $doneInfoIntern) ) {
             return [
                 'success' => true
             ];

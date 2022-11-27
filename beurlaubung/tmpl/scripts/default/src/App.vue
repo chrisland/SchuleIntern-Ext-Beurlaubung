@@ -4,44 +4,73 @@
     <AjaxError v-bind:error="error"></AjaxError>
     <AjaxSpinner v-bind:loading="loading"></AjaxSpinner>
 
+
     <div v-if="page == 'list'">
-      <button class="si-btn" @click="handlerPage('form')"><i class="fa fa-plus"></i> Neuen Antrag stellen</button>
+      <div class="flex flex-row">
+        <div class="flex-1">
+          <button v-if="acl.write == 1" class="si-btn" @click="handlerPage('form')"><i class="fa fa-plus"></i> Neuen Antrag stellen</button>
+          <button v-else class="si-btn si-btn-off">Du kannst keinen Antrag stellen.</button>
+        </div>
+        <div class="flex-1">
+          <div class="si-hinweis" v-if="freigabe == 0 && freigabeKL == 0 && freigabeSL == 0">
+            Anträge werden automatisch genehmigt.
+          </div>
+          <div class="si-hinweis" v-if="freigabeSL == 1">
+            Anträge werden von der Schulleitung genehmigt.
+          </div>
+          <div class="si-hinweis" v-if="freigabeKL == 1">
+            Anträge werden von der Klassenleitung genehmigt.
+          </div>
+        </div>
+      </div>
+
+
+
+
       <table class="si-table" v-if="sortList && sortList.length >= 1">
         <thead>
         <tr>
-          <th v-on:click="handlerSort('status')" class="curser-sort">Status</th>
-          <th v-on:click="handlerSort('datumStart')" class="curser-sort">Datum</th>
-          <th v-on:click="handlerSort('userID')" class="curser-sort">Schüler*in</th>
-          <th v-on:click="handlerSort('stunden')" class="curser-sort">Stunden</th>
-          <th v-on:click="handlerSort('info')" class="curser-sort">Begründung</th>
-          <th v-on:click="handlerSort('doneKL')" class="curser-sort">Genehmigung Klassenleitung</th>
-          <th v-on:click="handlerSort('doneSL')" class="curser-sort">Genehmigung Schulleitung</th>
+          <th v-on:click="handlerSort('status')" class="curser-sort" :class="{'text-orange': sort.column == 'status'}">Status</th>
+          <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange': sort.column == 'createdTime'}">Erstellt</th>
+          <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
+          <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Benutzer*in</th>
+          <th >Stunden</th>
+          <th >Begründung</th>
+          <th >Hinweis</th>
         </tr>
         </thead>
         <tbody>
         <tr v-bind:key="index" v-for="(item, index) in  sortList"
             class="">
-          <td>{{ item.status }}</td>
+          <td>
+            <button v-if="item.status == 1" class="si-btn si-btn-icon si-btn-curser-off si-btn-active"><i class="fa fa-question"></i></button>
+            <button v-if="item.status == 2" class="si-btn si-btn-icon si-btn-curser-off si-btn-green"><i class="fa fa-check"></i></button>
+            <button v-if="item.status == 3" class="si-btn si-btn-icon si-btn-curser-off si-btn-red"><i class="fa fa-ban"></i></button>
+          </td>
+          <td>{{ item.createdTime }}</td>
           <td>{{ item.datumStart }}</td>
           <td>{{item.user.name}} <span class="text-small" v-if="item.user.klasse">{{item.user.klasse}}</span></td>
           <td>{{ item.stunden }}</td>
-          <td>{{ item.info }}</td>
-          <td>{{ item.doneKL }}</td>
-          <td>{{ item.doneSL }}</td>
+          <td><span class="text-small">{{ item.info }}</span></td>
+          <td>
+            <div class="" v-if="item.doneInfo">{{item.doneInfo}}</div>
+            <div class="text-small" v-if="item.doneInfo" >{{item.doneDate}}</div>
+          </td>
         </tr>
         </tbody>
       </table>
-      <div v-else> - keine Inhalte vorhanden -</div>
+      <div v-else class="si-hinweis-empty"> - keine Inhalte vorhanden -</div>
     </div>
 
-    {{ form }}
-    <div v-if="page == 'form'">
+
+    <div v-if="page == 'form'" class="width-55vw">
       <button class="si-btn si-btn-light" @click="handlerPage()"><i class="fa fa fa-angle-left"></i> Zurück</button>
 
-      <form class="si-form" @submit="handlerSaveForm($event)">
+
+      <form class="si-form " @submit="handlerSaveForm($event)">
         <ul>
           <li>
-            <label>Schüler*in</label>
+            <label>Benutzer*in</label>
             <select required v-model="form.schueler">
               <option v-bind:key="index" v-for="(item, index) in  mySchueler" :value="item.id">{{ item.name }} -
                 {{ item.klasse }}
@@ -86,7 +115,7 @@
 
           </li>
           <li>
-            <label>Begründung <span v-if="settings['extBeurlaubung-form-info-required']" class="text-small">* Pflichtfeld</span></label>
+            <label>Begründung <span v-if="settings['extBeurlaubung-form-info-required'] == 1" class="text-small">* Pflichtfeld</span></label>
             <textarea :required="settings['extBeurlaubung-form-info-required'] == 1 ? true : false"
                       v-model="form.info"></textarea>
           </li>
@@ -150,15 +179,20 @@ export default {
     return {
       apiURL: window.globals.apiURL,
       settings: window.globals.settings,
+      acl: window.globals.acl,
       error: false,
       loading: false,
       page: 'list',
       sort: {
         column: 'datumStart',
-        order: true
+        order: false
       },
+      sortDates: ['datumStart','createdTime'],
       searchColumns: ['status', 'info'],
       searchString: '',
+
+      freigabeKL: window.globals.freigabeKL,
+      freigabeSL: window.globals.freigabeSL,
 
       list: false,
 
@@ -181,6 +215,15 @@ export default {
   },
   computed: {
     sortList: function () {
+
+      function getDates(a, b) {
+        const dmyA = a[that.sort.column].split(".");
+        const date1 = new Date(dmyA[2], dmyA[1] - 1, dmyA[0]);
+        const dmyB = b[that.sort.column].split(".");
+        const date2 = new Date(dmyB[2], dmyB[1] - 1, dmyB[0]);
+        return [date1, date2];
+      }
+
       if (this.list) {
         let data = this.list;
         if (data.length > 0) {
@@ -202,11 +245,28 @@ export default {
           }
 
           // SORTIERUNG
+          var that = this;
           if (this.sort.column) {
             if (this.sort.order) {
-              return data.sort((a, b) => a[this.sort.column].localeCompare(b[this.sort.column]))
+              //return data.sort((a, b) => a[this.sort.column].localeCompare(b[this.sort.column]))
+              return data.sort( function (a, b) {
+                if ( that.sortDates.includes(that.sort.column) ) {
+                  var dates = getDates(a,b);
+                  return dates[0] - dates[1];
+                } else {
+                  return a[that.sort.column].localeCompare(b[that.sort.column]);
+                }
+              });
             } else {
-              return data.sort((a, b) => b[this.sort.column].localeCompare(a[this.sort.column]))
+              //return data.sort((a, b) => b[this.sort.column].localeCompare(a[this.sort.column]))
+              return data.sort( function (a, b) {
+                if ( that.sortDates.includes(that.sort.column) ) {
+                  var dates = getDates(a,b);
+                  return dates[1] - dates[0];
+                } else {
+                  return b[that.sort.column].localeCompare(a[that.sort.column]);
+                }
+              });
             }
           }
 
@@ -289,27 +349,27 @@ export default {
           'Content-Type': 'multipart/form-data'
         }
       })
-          .then(function (response) {
-            if (response.data) {
-console.log(response.data);
-              if (response.data.error) {
-                that.error = '' + response.data.msg;
-              } else {
-                this.loadList();
-                this.handlerPage();
-                //data.item.favorite = response.data.favorite;
-              }
-            } else {
-              that.error = 'Fehler beim Laden. 01';
-            }
-          })
-          .catch(function () {
-            that.error = 'Fehler beim Laden. 02';
-          })
-          .finally(function () {
-            // always executed
-            that.loading = false;
-          });
+      .then(function (response) {
+        if (response.data) {
+
+          if (response.data.error == true) {
+            that.error = '' + response.data.msg;
+          } else {
+            that.loadList();
+            that.handlerPage();
+            //data.item.favorite = response.data.favorite;
+          }
+        } else {
+          that.error = 'Fehler beim Laden. 01';
+        }
+      })
+      .catch(function () {
+        that.error = 'Fehler beim Laden. 02';
+      })
+      .finally(function () {
+        // always executed
+        that.loading = false;
+      });
 
 
     },

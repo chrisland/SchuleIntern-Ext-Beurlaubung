@@ -4,51 +4,99 @@
     <AjaxError v-bind:error="error"></AjaxError>
     <AjaxSpinner v-bind:loading="loading"></AjaxSpinner>
 
+
+
+
+    <div v-if="page == 'form'" class="margin-t-l">
+
+
+      <div class="flex flex-row">
+        <div class="flex-1">
+          <button class="si-btn si-btn-light" @click="handlerPage()"><i class="fa fa fa-angle-left"></i> Zurück</button>
+        </div>
+        <div class="flex-1">
+          <div class="si-hinweis" v-if="freigabe == 0 && freigabeKL == 0 && freigabeSL == 0">
+            Anträge werden automatisch genehmigt.
+          </div>
+          <div class="si-hinweis" v-if="freigabeSL == 1">
+            Anträge werden von der Schulleitung genehmigt.
+          </div>
+          <div class="si-hinweis" v-if="freigabeKL == 1">
+            Anträge werden von der Klassenleitung genehmigt.
+          </div>
+        </div>
+      </div>
+
+      <div class="si-form " >
+        <ul>
+          <li>
+            <label>Vorlagen:</label>
+            <div class="si-btn-multiple">
+              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Begründung ist nicht ausreichend</button>
+              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Leistungserhebung</button>
+              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Datum nicht möglich</button>
+            </div>
+          </li>
+          <li>
+            <label>Begründung</label>
+            <textarea maxlength="600" v-model="formItem.doneInfo"></textarea>
+          </li>
+          <li>
+            <label>Info (intern)</label>
+            <textarea maxlength="600" v-model="formItem.doneInfoIntern"></textarea>
+          </li>
+          <li>
+            <button class="si-btn si-btn-red" v-on:click="setAntrag(formItem, 3)"><i class="fa fa-check"></i> Antrag ablehnen</button>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
     <div v-if="page == 'list'">
       <input type="search" class="si-input" v-model="searchString" placeholder="Suche..."/>
-      <table class="si-table" v-if="sortList && sortList.length >= 1">
-        <thead>
-        <tr>
-          <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange': sort.column == 'createdTime'}">Erstellt</th>
-          <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
-          <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Schüler*in</th>
-          <th v-on:click="handlerSort('stunden')" class="curser-sort" :class="{'text-orange': sort.column == 'stunden'}">Stunden</th>
-          <th >Begründung</th>
-          <th v-on:click="handlerSort('status')" class="curser-sort" :class="{'text-orange': sort.column == 'status'}">Genehmigung</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-bind:key="index" v-for="(item, index) in  sortList"
-            class="">
-          <td>{{ item.createdTime }}</td>
-          <td>{{ item.datumStart }}<span v-if="item.datumEnde && item.datumEnde != item.datumStart"> - {{ item.datumEnde }}</span></td>
-          <td>{{item.user.name}} <span class="text-small" v-if="item.user.klasse">{{item.user.klasse}}</span></td>
-          <td>{{ item.stunden }}</td>
-          <td>{{ item.info }}</td>
-          <td v-if="item.status == 1">
-            <button class="si-btn si-btn-off text-orange"><i class="fa fa-question"></i> Offen</button>
-          </td>
-          <td v-if="item.status == 2">
-            <button class="si-btn si-btn-off text-green"><i class="fa fa-check"></i> Genehmigt</button>
-          </td>
-          <td v-if="item.status == 3">
-            <button class="si-btn si-btn-off text-red"><i class="fa fa-ban"></i> Nicht Genehmigt</button>
-          </td>
-          <td v-if="item.doneDate">
-            <div class="text-small text-bold" v-if="item.doneInfo">{{item.doneInfo}}</div>
-            <div class="text-small" >{{item.doneDate}} - {{item.doneUserUser.name}}</div>
 
-            <div class="text-small text-bold" v-if="item.doneKLInfo">{{item.doneKLInfo}}</div>
-            <div class="text-small" v-if="item.doneKLInfo && item.doneKLDate">{{item.doneKLDate}} - {{item.doneUserUser.name}}</div>
+      <div v-if="list.access == false" class="si-hinweis-empty"> - keine Zugriff -</div>
+      <div v-else>
+        <table class="si-table" v-if="sortList && sortList.length >= 1">
+          <thead>
+          <tr>
+            <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange': sort.column == 'createdTime'}">Erstellt</th>
+            <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
+            <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Benutzer*in</th>
+            <th v-on:click="handlerSort('stunden')" class="curser-sort" :class="{'text-orange': sort.column == 'stunden'}">Stunden</th>
+            <th>Begründung</th>
+            <th v-if="freigabe == 1" class="curser-sort">Genehmigung</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-bind:key="index" v-for="(item, index) in  sortList"
+              class="">
+            <td>{{ item.createdTime }}</td>
+            <td>{{ item.datumStart }}<span v-if="item.datumEnde && item.datumEnde != item.datumStart"> - {{
+                item.datumEnde
+              }}</span></td>
+            <td>{{ item.user.name }} <span class="text-small" v-if="item.user.klasse">{{ item.user.klasse }}</span></td>
+            <td>{{ item.stunden }}</td>
+            <td><span class="text-small">{{ item.info }}</span></td>
+            <td v-if="freigabe == 1">
+            <span v-if="item.status == 1">
+              <button class="si-btn si-btn-icon si-btn-green margin-r-m" @click="handlerDone(item, 2)"><i class="fa fa-check"></i></button>
+              <button class="si-btn si-btn-icon si-btn-red" @click="handlerDone(item, 3)"><i class="fa fa-ban"></i></button>
+            </span>
+              <span v-if="item.status == 2">
+              <button class="si-btn si-btn-icon si-btn-off text-green"><i class="fa fa-check"></i></button>
+            </span>
+              <span v-if="item.status == 3">
+              <button class="si-btn si-btn-icon si-btn-off text-red"><i class="fa fa-check"></i></button>
+            </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <div v-else class="si-hinweis-empty"> - keine Inhalte vorhanden -</div>
+      </div>
 
-            <div class="text-small text-bold" v-if="item.doneSLInfo">{{item.doneSLInfo}}</div>
-            <div class="text-small" v-if="item.doneSLInfo && item.doneSLDate">{{item.doneSLDate}} - {{item.doneUserUser.name}}</div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-      <div v-else> - keine Inhalte vorhanden -</div>
     </div>
 
   </div>
@@ -64,13 +112,10 @@ import '@vuepic/vue-datepicker/dist/main.css'
 const axios = require('axios').default;
 
 
-
 export default {
   setup() {
 
-    return {
-
-    }
+    return {}
   },
   name: 'App',
   components: {
@@ -80,6 +125,9 @@ export default {
     return {
       apiURL: window.globals.apiURL,
       settings: window.globals.settings,
+      freigabe: window.globals.freigabe,
+      freigabeKL: window.globals.freigabeKL,
+      freigabeSL: window.globals.freigabeSL,
       error: false,
       loading: false,
       page: 'list',
@@ -91,7 +139,8 @@ export default {
       searchColumns: ['datumStart', 'datumEnde','stunden','info','doneInfo','username'],
       searchString: '',
 
-      list: false
+      list: false,
+      formItem: false
 
     };
   },
@@ -105,6 +154,7 @@ export default {
         const date2 = new Date(dmyB[2], dmyB[1] - 1, dmyB[0]);
         return [date1, date2];
       }
+
       if (this.list) {
         let data = this.list;
         if (data.length > 0) {
@@ -164,7 +214,77 @@ export default {
 
   },
   methods: {
+    presetInfo: function (event) {
+      if (event.srcElement.innerHTML) {
+        this.formItem.doneInfo = event.srcElement.innerHTML;
+      }
+    },
+    handlerDone: function (item, status) {
 
+      if (!item || !item.id) {
+        return false;
+      }
+      if (!status) {
+        return false;
+      }
+
+      // Open Modal
+      if (status == 3) {
+        this.formItem = item;
+        this.handlerPage('form');
+      } else {
+        this.setAntrag(item, status);
+      }
+
+
+    },
+    setAntrag: function (item, status) {
+
+      if (!item || !item.id) {
+        return false;
+      }
+      if (!status) {
+        return false;
+      }
+
+      const formData = new FormData();
+      formData.append('id', item.id);
+      formData.append('status', status);
+      formData.append('doneInfo', item.doneInfo);
+      formData.append('doneInfoIntern', item.doneInfoIntern);
+
+      this.loading = true;
+      var that = this;
+      axios.post(this.apiURL + '/setAntragDoneAdmin', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+          .then(function (response) {
+            if (response.data) {
+              if (response.data.error) {
+                that.error = '' + response.data.msg;
+              } else {
+                if (response.data.success) {
+                  item.status = status;
+                  //console.log('ok', item);
+                  that.handlerPage();
+                }
+              }
+            } else {
+              that.error = 'Fehler beim Laden. 01';
+            }
+          })
+          .catch(function () {
+            that.error = 'Fehler beim Laden. 02';
+          })
+          .finally(function () {
+            // always executed
+            that.loading = false;
+          });
+
+
+    },
     handlerSort: function (column) {
       if (column) {
         this.sort.column = column;
@@ -179,7 +299,7 @@ export default {
 
       this.loading = true;
       var that = this;
-      axios.get(this.apiURL + '/getListAdmin/list')
+      axios.get(this.apiURL + '/getListOpen')
           .then(function (response) {
             if (response.data) {
               if (response.data.error) {
@@ -226,7 +346,7 @@ export default {
       })
           .then(function (response) {
             if (response.data) {
-console.log(response.data);
+              console.log(response.data);
               if (response.data.error) {
                 that.error = '' + response.data.msg;
               } else {

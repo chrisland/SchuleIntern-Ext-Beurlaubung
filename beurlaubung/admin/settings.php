@@ -49,32 +49,8 @@ class extBeurlaubungAdminSettings extends AbstractPage {
             [
                 'name' => "extBeurlaubung-form-info-required",
                 'typ' => 'BOOLEAN',
-                'title' => "Neuer Antrag - Begründung als Pfichtfeld",
+                'title' => "Formular - Begründung als Pfichtfeld",
                 'desc' => ""
-            ],
-            [
-                'name' => "extBeurlaubung-volljaehrige-schueler",
-                'typ' => 'BOOLEAN',
-                'title' => "Beurlaubung durch volljährige Schüler aktivieren",
-                'desc' => "Ist diese Einstellung aktiv, können sich volljährige Schüler selbst krank melden."
-            ],
-            [
-                'name' => "extBeurlaubung-schueler",
-                'typ' => 'BOOLEAN',
-                'title' => "Beurlaubung durch Schüler aktivieren",
-                'desc' => "Ist diese Einstellung aktiv, können sich Schüler selbst krank melden. (Auch die unter 18 Jahren!)"
-            ],
-            [
-                'name' => "extBeurlaubung-lnw-sperre",
-                'typ' => 'BOOLEAN',
-                'title' => "An Tagen mit angekündigtem Leistungsnachweis keine Beurlaubung erlauben",
-                'desc' => "Wenn diese Option aktiv ist, dann kann für Tage, an denen ein Leistungsnachwei angekündigt ist, keine Beurlaubung eingereicht werden."
-            ],
-            [
-                'name' => "extBeurlaubung-termin-sperre",
-                'typ' => 'BOOLEAN',
-                'title' => "An Tagen mit Klassenterminen keine Beurlaubung erlauben",
-                'desc' => "Wenn diese Option aktiv ist, dann kann für Tage, an denen ein Klassentermin angekündigt ist, keine Beurlaubung eingereicht werden."
             ],
             [
                 'name' => "extBeurlaubung-klassenleitung-freigabe",
@@ -100,22 +76,12 @@ class extBeurlaubungAdminSettings extends AbstractPage {
                 'title' => "Schulleitung bei neuen Anträgen per Nachricht informieren?",
                 'desc' => ""
             ],
-
             [
-                'name' => "extBeurlaubung-ausdruck-erforderlich",
+                'name' => "extBeurlaubung-volljaehrige-schueler",
                 'typ' => 'BOOLEAN',
-                'title' => "Muss nach dem Beurlaubungsantrag ein schriftlicher Antrag ausgedruckt und eingereicht werden?",
-                'desc' => ""
-            ],
-
-            [
-                'name' => "extBeurlaubung-genehmigung-benachrichtigung-gruppen",
-                'typ' => 'SELECT',
-                'options' => $options,
-                'multiple' => true,
-                'title' => "Folgende Gruppen können optional bei der Genehmigung über eine Beurlaubung informiert werden.",
-                'desc' => "Sind hier Gruppen ausgewählt, kann der Schulleitung bei der Eingabe einer Genehmigung option die Infos zur Beurlaubung an diese Gruppen automatisch senden. (z.B. zur Information der Nachmittagsbetreuung)"
-            ],
+                'title' => "Beurlaubung durch volljährige Schüler aktivieren",
+                'desc' => "Ist diese Einstellung aktiv, können sich volljährige Schüler selbst krank melden."
+            ]
         ];
         return $settings;
 

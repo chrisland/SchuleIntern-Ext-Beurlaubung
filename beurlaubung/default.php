@@ -30,18 +30,42 @@ class extBeurlaubungDefault extends AbstractPage
 
         //$user = DB::getSession()->getUser();
 
+        if (DB::getSession()->isPupil()) {
+
+            $mySchueler = [];
+            $mySchueler_temp = DB::getSession()->getUser();
+            $mySchueler[] = $mySchueler_temp->getCollection(true, false);
+
+            $volljaehrige = DB::getSettings()->getBoolean("extBeurlaubung-volljaehrige-schueler");
+            if ($volljaehrige == 1) {
+                $acl['rights']['write'] = 0;
+                $alter = (int)DB::getSession()->getPupilObject()->getAlter();
+                if ($alter >= 18) {
+                    $acl['rights']['write'] = 1;
+                }
+            }
+        }
+
 
         if (DB::getSession()->isEltern()) {
             $mySchueler = [];
             $mySchueler_temp = DB::getSession()->getElternObject()->getMySchueler();
             foreach ($mySchueler_temp as $schueler) {
-                $mySchueler[] = $schueler->getCollection(true, true);
+                $mySchueler[] = $schueler->getCollection(true, false);
             }
         }
 
         if (DB::getSession()->isTeacher()) {
             $isSchulleitung = DB::getSession()->getTeacherObject()->isSchulleitung();
         }
+
+        if (DB::getSession()->isNone()) {
+            $mySchueler = [];
+            $mySchueler_temp = DB::getSession()->getUser();
+            $mySchueler[] = $mySchueler_temp->getCollection(true, false);
+        }
+
+
 
         $maxStunden = (int)DB::getSettings()->getValue("stundenplan-anzahlstunden");
         if (!$maxStunden) {
@@ -50,10 +74,14 @@ class extBeurlaubungDefault extends AbstractPage
         $stundenVormittag = 6;
         $stundenNachmittag = $maxStunden - $stundenVormittag;
 
+
         //$settings = $this->getSettings();
 
+        $user = DB::getSession()->getUser();
 
-            //DB::getSettings()->getBoolean("beurlaubung-volljaehrige-schueler")
+        $freigabeSL = DB::getSettings()->getBoolean("extBeurlaubung-schulleitung-freigabe");
+        $freigabeKL = DB::getSettings()->getBoolean("extBeurlaubung-klassenleitung-freigabe");
+
 
         $this->render([
             "tmpl" => "default",
@@ -68,7 +96,9 @@ class extBeurlaubungDefault extends AbstractPage
                 "maxStunden" => (int)$maxStunden,
                 "stundenVormittag" => (int)$stundenVormittag,
                 "stundenNachmittag" => (int)$stundenNachmittag,
-                "mySchueler" => $mySchueler
+                "mySchueler" => $mySchueler,
+                "freigabeKL" => (int)$freigabeKL,
+                "freigabeSL" => (int)$freigabeSL
             ]
         ]);
 
