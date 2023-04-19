@@ -16,6 +16,9 @@ class extBeurlaubungAdminList extends AbstractPage {
 		//$this->getRequest();
 		//$this->getAcl();
 
+        if ( !$this->canWrite() ) {
+            new errorPage('Kein Zugriff');
+        }
 		
 		$this->render([
             "tmpl" => "list",

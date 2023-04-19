@@ -35,6 +35,12 @@ class extBeurlaubungOpen extends AbstractPage {
             }
         }
 
+
+        if ( DB::getSession()->isAdminOrGroupAdmin($this->extension['json']['adminGroupName']) === true ) {
+            $freigabe = true;
+        }
+
+
         $this->render([
             "tmpl" => "default",
             "scripts" => [

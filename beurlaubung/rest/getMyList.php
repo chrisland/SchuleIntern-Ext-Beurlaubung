@@ -17,7 +17,7 @@ class getMyList extends AbstractRest {
         }
 
         $acl = $this->getAcl();
-        if ((int)$acl['rights']['read'] !== 1 && (int)DB::getSession()->getUser()->isAnyAdmin() !== 1 ) {
+        if ( !$this->canRead() ) {
             return [
                 'error' => true,
                 'msg' => 'Kein Zugriff'

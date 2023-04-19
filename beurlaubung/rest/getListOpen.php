@@ -9,9 +9,8 @@ class getListOpen extends AbstractRest
     public function execute($input, $request)
     {
 
-
         $acl = $this->getAcl();
-        if ((int)$acl['rights']['read'] !== 1 && (int)DB::getSession()->getUser()->isAnyAdmin() !== 1) {
+        if ( !$this->canRead() ) {
             return [
                 'error' => true,
                 'msg' => 'Kein Zugriff'
@@ -25,51 +24,17 @@ class getListOpen extends AbstractRest
 
         $tmp_data = extBeurlaubungModelAntrag::getByStatus($status);
 
-        $user = DB::getSession()->getUser();
-
-        if ( $user->isTeacher() ) {
-            $teacherID = $user->getTeacherObject()->getID();
-        }
 
         $ret = [];
         foreach ($tmp_data as $item) {
             $ret[] = $item->getCollection(true);
         }
 
-        $freigabe = false;
-        $freigabeSL = DB::getSettings()->getBoolean("extBeurlaubung-schulleitung-freigabe");
-        if ($freigabeSL) {
-            $schulleitung = schulinfo::getSchulleitungLehrerObjects();
-            foreach ($schulleitung as $sl) {
-                if ($sl->getUserID() == $user->getUserID()) {
-                    $freigabe = true;
-                }
-            }
-        }
+        $user = DB::getSession()->getUser();
 
-        if ($freigabe !== true) {
-            $freigabeKL = DB::getSettings()->getBoolean("extBeurlaubung-klassenleitung-freigabe");
-            if ($freigabeKL && $teacherID ) {
-                $arr = [];
-                foreach ($ret as $item) {
-                    $klasse = $item['user']['klasse'];
-                    $leitungen = klasse::getKlassenleitungAll($klasse);
-                    $ok = false;
-                    foreach ($leitungen as $leitung) {
-                        if ($leitung['lehrerID'] == $teacherID) {
-                            $ok = true;
-                        }
-                    }
-                    if ($ok == true) {
-                        $arr[] = $item;
-                    }
-                }
-                $ret = $arr;
-                $freigabe = true;
-            }
-        }
+        $freigabe = extBeurlaubungModelAntrag::getFreigabeBy($ret, $user);
 
-        if ( $user->isAdmin() ) {
+        if ( DB::getSession()->isAdminOrGroupAdmin($this->extension['adminGroupName']) === true ) {
             $freigabe = true;
         }
 

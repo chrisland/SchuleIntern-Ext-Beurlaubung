@@ -16,11 +16,15 @@ class extBeurlaubungAdminSettings extends AbstractPage {
 		//$this->getRequest();
 		//$this->getAcl();
 
+        if ( !$this->canWrite() ) {
+            new errorPage('Kein Zugriff');
+        }
 		
 		$this->render([
 			"tmplHTML" => '<div class="box"><div class="box-body"><div id=app></div></div></div>',
 			"scripts" => [
-				PATH_COMPONENTS.'system/adminSettings/dist/main.js'
+                PATH_COMPONENTS.'system/adminSettings2/dist/js/chunk-vendors.js',
+                PATH_COMPONENTS.'system/adminSettings2/dist/js/app.js'
 			],
 			"data" => [
 				"selfURL" => URL_SELF,
@@ -81,6 +85,18 @@ class extBeurlaubungAdminSettings extends AbstractPage {
                 'typ' => 'BOOLEAN',
                 'title' => "Beurlaubung durch volljährige Schüler aktivieren",
                 'desc' => "Ist diese Einstellung aktiv, können sich volljährige Schüler selbst krank melden."
+            ],
+            [
+                'name' => "extBeurlaubung-antrag-open",
+                'typ' => 'TEXT',
+                'title' => "Hinweistext - Neuen Antrag stellen",
+                'desc' => ""
+            ],
+            [
+                'name' => "extBeurlaubung-antrag-finish",
+                'typ' => 'TEXT',
+                'title' => "Hinweistext - Nach stellen des Antrags",
+                'desc' => ""
             ]
         ];
         return $settings;

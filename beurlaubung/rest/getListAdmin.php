@@ -16,12 +16,11 @@ class getListAdmin extends AbstractRest
         if ($status_str == 'open') {
             $status = [1];
         } else if ($status_str == 'list') {
-            $status = [1, 2, 3];
+            $status = [1, 2, 21, 3];
         }
 
-
         //$acl = $this->getAcl();
-        if ((int)DB::getSession()->getUser()->isAnyAdmin() !== 1) {
+        if ( DB::getSession()->isAdminOrGroupAdmin($this->extension['adminGroupName']) !== true ) {
             return [
                 'error' => true,
                 'msg' => 'Kein Zugriff'

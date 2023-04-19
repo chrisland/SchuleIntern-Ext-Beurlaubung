@@ -18,20 +18,49 @@ class extBeurlaubungAdminAcl extends AbstractPage {
 
         $user = DB::getSession()->getUser();
 
-        if ( !$user->isAnyAdmin() ) {
+        if ( !$this->canWrite() ) {
             new errorPage('Kein Zugriff');
         }
 
+        $form = [
+            "title" => "Antrag stellen",
+            "desc" => "Welcher Benutzer darf seine Beurlaubungsanträge sehen (Lesen) oder neue Stellen (Schreiben)?",
+            "acl" => [
+                "schueler" => [
+                    "read" => 1,
+                    "write" => 1,
+                    "delete" => 0,
+                ],
+                "lehrer" => [
+                    "read" => 1,
+                    "write" => 1,
+                    "delete" => 0,
+                ],
+                "eltern" => [
+                    "read" => 1,
+                    "write" => 1,
+                    "delete" => 0,
+                ],
+                "none" => [
+                    "read" => 1,
+                    "write" => 1,
+                    "delete" => 0,
+                ]
+            ]
+        ];
+
 		$this->render([
-			"tmplHTML" => '<div class="box"><div class="box-body"><h4 class="text-orange">Antrag Stellen:</h4><div id=app></div></div></div>',
+			"tmplHTML" => '<div class="box"><div class="box-body"><div id=app></div></div></div>',
 			"scripts" => [
-				PATH_COMPONENTS.'system/adminAcl/dist/main.js'
+                PATH_COMPONENTS.'system/adminAcl2/dist/js/chunk-vendors.js',
+                PATH_COMPONENTS.'system/adminAcl2/dist/js/app.js'
 			],
 			"data" => [
 				"selfURL" => URL_SELF,
+                "form" => $form,
 				"acl" => $this->getAclAll(),
-				"globalAdminGroup" => $this->getAdminGroupUsers('Webportal_Administrator'),
-				"extensionAdminGroup" => $this->getAdminGroupUsers(self::getAdminGroup())
+                "adminList" => self::getGroupMembers('Webportal_Administrator'),
+                "adminExtension" => self::getGroupMembers(self::getAdminGroup())
 			]
 		]);
 

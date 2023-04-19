@@ -5,8 +5,6 @@
     <AjaxSpinner v-bind:loading="loading"></AjaxSpinner>
 
 
-
-
     <div v-if="page == 'form'" class="margin-t-l">
 
 
@@ -27,14 +25,17 @@
         </div>
       </div>
 
-      <div class="si-form " >
+      <div class="si-form ">
         <ul>
           <li>
             <label>Vorlagen:</label>
             <div class="si-btn-multiple">
-              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Begründung ist nicht ausreichend</button>
+              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Begründung ist nicht
+                ausreichend
+              </button>
               <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Leistungserhebung</button>
-              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Datum nicht möglich</button>
+              <button class="si-btn si-btn-border margin-r-s" v-on:click="presetInfo($event)">Datum nicht möglich
+              </button>
             </div>
           </li>
           <li>
@@ -46,7 +47,9 @@
             <textarea maxlength="600" v-model="formItem.doneInfoIntern"></textarea>
           </li>
           <li>
-            <button class="si-btn si-btn-red" v-on:click="setAntrag(formItem, 3)"><i class="fa fa-check"></i> Antrag ablehnen</button>
+            <button class="si-btn si-btn-red" v-on:click="setAntrag(formItem, 3)"><i class="fa fa-check"></i> Antrag
+              ablehnen
+            </button>
           </li>
         </ul>
       </div>
@@ -61,11 +64,20 @@
         <table class="si-table" v-if="sortList && sortList.length >= 1">
           <thead>
           <tr>
-            <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange': sort.column == 'createdTime'}">Erstellt</th>
-            <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
-            <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Benutzer*in</th>
-            <th v-on:click="handlerSort('stunden')" class="curser-sort" :class="{'text-orange': sort.column == 'stunden'}">Stunden</th>
-            <th>Begründung</th>
+            <th v-on:click="handlerSort('createdTime')" class="curser-sort"
+                :class="{'text-orange colum-sort': sort.column == 'createdTime'}">Erstellt
+            </th>
+            <th></th>
+            <th v-on:click="handlerSort('datumStart')" class="curser-sort"
+                :class="{'text-orange colum-sort': sort.column == 'datumStart'}">Datum
+            </th>
+            <th v-on:click="handlerSort('userID')" class="curser-sort"
+                :class="{'text-orange colum-sort': sort.column == 'userID'}">Benutzer*in
+            </th>
+            <th v-on:click="handlerSort('stunden')" class="curser-sort"
+                :class="{'text-orange colum-sort': sort.column == 'stunden'}">Stunden
+            </th>
+            <th width="30%">Begründung</th>
             <th v-if="freigabe == 1" class="curser-sort">Genehmigung</th>
           </tr>
           </thead>
@@ -73,18 +85,25 @@
           <tr v-bind:key="index" v-for="(item, index) in  sortList"
               class="">
             <td>{{ item.createdTime }}</td>
-            <td>{{ item.datumStart }}<span v-if="item.datumEnde && item.datumEnde != item.datumStart"> - {{
-                item.datumEnde
-              }}</span></td>
+            <td><span class="text-small">in</span> {{ item.diff }} <span class="text-small">Tagen</span></td>
+            <td>{{ item.datumStart }}<span
+                v-if="item.datumEnde && item.datumEnde != item.datumStart"> - {{ item.datumEnde }}</span></td>
             <td>{{ item.user.name }} <span class="text-small" v-if="item.user.klasse">{{ item.user.klasse }}</span></td>
             <td>{{ item.stunden }}</td>
-            <td><span class="text-small">{{ item.info }}</span></td>
+            <td>
+              <span v-if="item.info">
+                <button v-if="!item.infoShow" class="si-btn si-btn-light" @click="handlerMouseover(item)">Anzeigen</button>
+                <span class="" v-if="item.infoShow">{{ item.info }}</span>
+              </span>
+            </td>
             <td v-if="freigabe == 1">
             <span v-if="item.status == 1">
-              <button class="si-btn si-btn-icon si-btn-green margin-r-m" @click="handlerDone(item, 2)"><i class="fa fa-check"></i></button>
-              <button class="si-btn si-btn-icon si-btn-red" @click="handlerDone(item, 3)"><i class="fa fa-ban"></i></button>
+              <button class="si-btn si-btn-icon si-btn-green margin-r-m" @click="handlerDone(item, 2)"><i
+                  class="fa fa-check"></i></button>
+              <button class="si-btn si-btn-icon si-btn-red" @click="handlerDone(item, 3)"><i
+                  class="fa fa-ban"></i></button>
             </span>
-              <span v-if="item.status == 2">
+              <span v-if="item.status == 2 || item.status == 21">
               <button class="si-btn si-btn-icon si-btn-off text-green"><i class="fa fa-check"></i></button>
             </span>
               <span v-if="item.status == 3">
@@ -135,8 +154,8 @@ export default {
         column: 'datumStart',
         order: false
       },
-      sortDates: ['datumStart','createdTime'],
-      searchColumns: ['datumStart', 'datumEnde','stunden','info','doneInfo','username'],
+      sortDates: ['datumStart', 'createdTime'],
+      searchColumns: ['datumStart', 'datumEnde', 'stunden', 'info', 'doneInfo', 'username'],
       searchString: '',
 
       list: false,
@@ -180,9 +199,9 @@ export default {
           if (this.sort.column) {
             if (this.sort.order) {
               //return data.sort((a, b) => a[this.sort.column].localeCompare(b[this.sort.column]))
-              return data.sort( function (a, b) {
-                if ( that.sortDates.includes(that.sort.column) ) {
-                  var dates = getDates(a,b);
+              return data.sort(function (a, b) {
+                if (that.sortDates.includes(that.sort.column)) {
+                  var dates = getDates(a, b);
                   return dates[0] - dates[1];
                 } else {
                   return a[that.sort.column].localeCompare(b[that.sort.column]);
@@ -190,9 +209,9 @@ export default {
               });
             } else {
               //return data.sort((a, b) => b[this.sort.column].localeCompare(a[this.sort.column]))
-              return data.sort( function (a, b) {
-                if ( that.sortDates.includes(that.sort.column) ) {
-                  var dates = getDates(a,b);
+              return data.sort(function (a, b) {
+                if (that.sortDates.includes(that.sort.column)) {
+                  var dates = getDates(a, b);
                   return dates[1] - dates[0];
                 } else {
                   return b[that.sort.column].localeCompare(a[that.sort.column]);
@@ -214,6 +233,9 @@ export default {
 
   },
   methods: {
+    handlerMouseover: function (item) {
+      item.infoShow = true;
+    },
     presetInfo: function (event) {
       if (event.srcElement.innerHTML) {
         this.formItem.doneInfo = event.srcElement.innerHTML;
@@ -396,6 +418,8 @@ export default {
 </script>
 
 <style>
+
+
 .dp__theme_light {
   --dp-background-color: #ffffff;
   --dp-text-color: #212121;

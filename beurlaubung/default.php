@@ -22,7 +22,7 @@ class extBeurlaubungDefault extends AbstractPage
         //print_r($_request);
 
         $acl = $this->getAcl();
-        if ((int)$acl['rights']['read'] !== 1 && (int)DB::getSession()->getUser()->isAnyAdmin() !== 1) {
+        if ( !$this->canRead() ) {
             new errorPage('Kein Zugriff');
         }
 
@@ -57,6 +57,10 @@ class extBeurlaubungDefault extends AbstractPage
 
         if (DB::getSession()->isTeacher()) {
             $isSchulleitung = DB::getSession()->getTeacherObject()->isSchulleitung();
+
+            $mySchueler = [];
+            $mySchueler_temp = DB::getSession()->getUser();
+            $mySchueler[] = $mySchueler_temp->getCollection(true, false);
         }
 
         if (DB::getSession()->isNone()) {
@@ -83,6 +87,7 @@ class extBeurlaubungDefault extends AbstractPage
         $freigabeKL = DB::getSettings()->getBoolean("extBeurlaubung-klassenleitung-freigabe");
 
 
+
         $this->render([
             "tmpl" => "default",
             "scripts" => [
@@ -98,7 +103,9 @@ class extBeurlaubungDefault extends AbstractPage
                 "stundenNachmittag" => (int)$stundenNachmittag,
                 "mySchueler" => $mySchueler,
                 "freigabeKL" => (int)$freigabeKL,
-                "freigabeSL" => (int)$freigabeSL
+                "freigabeSL" => (int)$freigabeSL,
+                "hinweisAntragOpen" => nl2br(DB::getSettings()->getValue("extBeurlaubung-antrag-open")),
+                "hinweisAntragOpenFinish" => nl2br(DB::getSettings()->getValue("extBeurlaubung-antrag-finish"))
             ]
         ]);
 

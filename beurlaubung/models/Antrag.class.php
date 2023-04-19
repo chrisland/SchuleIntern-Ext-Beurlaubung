@@ -173,6 +173,12 @@ class extBeurlaubungModelAntrag
             "doneSLInfo" => $this->getDoneSLInfo(),
         ];
 
+        $diff = $dateStart->diff( new DateTime(date('Y-m-d', $this->getCreatedTime())) );
+        if ($diff) {
+            $collection['diff'] = $diff->days;
+        }
+
+
         if ($full) {
             if ( $this->getUserID() ) {
                 $temp_user_1 = user::getUserByID($this->getUserID());
@@ -193,6 +199,7 @@ class extBeurlaubungModelAntrag
 
         return $collection;
     }
+
 
 
     /**
@@ -232,7 +239,41 @@ class extBeurlaubungModelAntrag
             $ret[] = new self($data);
         }
         return $ret;
+    }
 
+    /**
+     * @return Array[]
+     */
+    public static function getByUserIDAndStatus($userID = false, $status = 1)  // 1- offen  2- ja  3- nein
+    {
+        if (!$userID) {
+            return false;
+        }
+        $ret = [];
+        $dataSQL = DB::getDB()->query("SELECT * FROM ext_beurlaubung_antrag WHERE (`createdUserID` = " . (int)$userID ." OR `userID` = " . (int)$userID.") AND `status` = ".(int)$status );
+        while ($data = DB::getDB()->fetch_array($dataSQL, true)) {
+            $ret[] = new self($data);
+        }
+        return $ret;
+    }
+
+    public static function getGenehmigtNichtVerarbeitete() {
+
+        $sql = DB::getDB()->query("SELECT id AS antragID, userID AS antragUserID, datumStart AS antragDatumStart , datumEnde AS antragDatumEnde,
+        stunden AS antragStunden, info AS antragBegruendung, doneInfo AS antragKLKommentar, doneInfo AS antragSLKommentar, userID
+        FROM ext_beurlaubung_antrag WHERE status = 2 AND ( doneKL=1 OR doneSL=1) ");
+        $allD = [];
+        while($b = DB::getDB()->fetch_array($sql)) {
+            $b['extension'] = true;
+            $b['antragIsVerarbeitet'] = 0;
+            $user = user::getUserByID($b['userID']);
+            $userCollection =  $user->getCollection(true);
+            if ($userCollection['asvid']) {
+                $b['antragSchuelerAsvID'] = $userCollection['asvid'];
+            }
+            $allD[] = new AbsenzBeurlaubungAntrag($b);
+        }
+        return $allD;
     }
 
 
@@ -248,7 +289,7 @@ class extBeurlaubungModelAntrag
             $doneInfoIntern = '';
         }
 
-        $sql = '';
+        $sql = false;
         $freigabeSL = DB::getSettings()->getBoolean("extBeurlaubung-schulleitung-freigabe");
         if ($freigabeSL) {
             $schulleitung = schulinfo::getSchulleitungLehrerObjects();
@@ -277,6 +318,9 @@ class extBeurlaubungModelAntrag
                 }
             }
         }
+        if ( $sql == false ) {
+            $sql = 'doneKL = 1, doneKLDate = "'.date('Y-m-d H:i', time()).'" , doneKLInfo = "'.DB::getDB()->escapeString($doneInfoIntern).'" ';
+        }
 
 
 
@@ -284,8 +328,8 @@ class extBeurlaubungModelAntrag
                 SET status=" . DB::getDB()->escapeString((int)$status) . ",
                 doneInfo='" . DB::getDB()->escapeString($info) . "',
                 doneUser=" . DB::getDB()->escapeString($userID) . ",
-                doneDate = '".date('Y-m-d H:i', time())."',
-                $sql
+                doneDate = '".date('Y-m-d H:i', time())."'
+                , $sql
                 WHERE id=".$id
         )) {
             return true;
@@ -333,5 +377,48 @@ class extBeurlaubungModelAntrag
 
     }
 
+
+    public static function getFreigabeBy($collection, $user) {
+
+        if ( $user->isTeacher() ) {
+            $teacherID = $user->getTeacherObject()->getID();
+        }
+
+        $freigabe = false;
+        $freigabeSL = DB::getSettings()->getBoolean("extBeurlaubung-schulleitung-freigabe");
+        if ($freigabeSL) {
+            $schulleitung = schulinfo::getSchulleitungLehrerObjects();
+            foreach ($schulleitung as $sl) {
+                if ($sl->getUserID() == $user->getUserID()) {
+                    $freigabe = true;
+                }
+            }
+        }
+
+        if ($freigabe !== true) {
+            $freigabeKL = DB::getSettings()->getBoolean("extBeurlaubung-klassenleitung-freigabe");
+            if ($freigabeKL && $teacherID ) {
+                $arr = [];
+                foreach ($collection as $item) {
+                    $klasse = $item['user']['klasse'];
+                    $leitungen = klasse::getKlassenleitungAll($klasse);
+                    $ok = false;
+                    foreach ($leitungen as $leitung) {
+                        if ($leitung['lehrerID'] == $teacherID) {
+                            $ok = true;
+                        }
+                    }
+                    if ($ok == true) {
+                        $arr[] = $item;
+                    }
+                }
+                $ret = $arr;
+                $freigabe = true;
+            }
+        }
+
+
+        return $freigabe;
+    }
 
 }

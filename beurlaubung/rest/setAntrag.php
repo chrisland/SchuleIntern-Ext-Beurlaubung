@@ -23,7 +23,7 @@ class setAntrag extends AbstractRest {
             $acl['rights']['write'] = 1;
         }
 
-        if ((int)$acl['rights']['write'] !== 1 && (int)DB::getSession()->getUser()->isAnyAdmin() !== 1 ) {
+        if ( !$this->canWrite() ) {
             return [
                 'error' => true,
                 'msg' => 'Kein Zugriff'

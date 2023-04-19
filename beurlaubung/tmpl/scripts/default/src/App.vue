@@ -5,6 +5,27 @@
     <AjaxSpinner v-bind:loading="loading"></AjaxSpinner>
 
 
+    <div v-if="page == 'finish'">
+      <h3 class="text-green">Der Antrag wurde eingereicht!</h3>
+
+      <div class="si-hinweis" v-if="hinweisAntragOpenFinish" v-html="hinweisAntragOpenFinish"></div>
+
+      <div class="flex-1">
+        <div class="si-hinweis" v-if="freigabe == 0 && freigabeKL == 0 && freigabeSL == 0">
+          Anträge werden automatisch genehmigt.
+        </div>
+        <div class="si-hinweis" v-if="freigabeSL == 1">
+          Anträge werden von der Schulleitung genehmigt.
+        </div>
+        <div class="si-hinweis" v-if="freigabeKL == 1">
+          Anträge werden von der Klassenleitung genehmigt.
+        </div>
+      </div>
+      <br>
+      <button class="si-btn" @click="handlerPage('list')"><i class="fas fa-arrow-left"></i>Zu meinen Anträgen</button>
+    </div>
+
+
     <div v-if="page == 'list'">
       <div class="flex flex-row">
         <div class="flex-1">
@@ -30,12 +51,12 @@
       <table class="si-table" v-if="sortList && sortList.length >= 1">
         <thead>
         <tr>
-          <th v-on:click="handlerSort('status')" class="curser-sort" :class="{'text-orange': sort.column == 'status'}">Status</th>
-          <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange': sort.column == 'createdTime'}">Erstellt</th>
-          <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
-          <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Benutzer*in</th>
+          <th v-on:click="handlerSort('status')" class="curser-sort" :class="{'text-orange colum-sort': sort.column == 'status'}">Status</th>
+          <th v-on:click="handlerSort('createdTime')" class="curser-sort" :class="{'text-orange colum-sort': sort.column == 'createdTime'}">Erstellt</th>
+          <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange colum-sort': sort.column == 'datumStart'}">Datum</th>
+          <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange colum-sort': sort.column == 'userID'}">Benutzer*in</th>
           <th >Stunden</th>
-          <th >Begründung</th>
+          <th width="30%" >Begründung</th>
           <th >Hinweis</th>
         </tr>
         </thead>
@@ -44,7 +65,7 @@
             class="">
           <td>
             <button v-if="item.status == 1" class="si-btn si-btn-icon si-btn-curser-off si-btn-active"><i class="fa fa-question"></i></button>
-            <button v-if="item.status == 2" class="si-btn si-btn-icon si-btn-curser-off si-btn-green"><i class="fa fa-check"></i></button>
+            <button v-if="item.status == 2 || item.status == 21" class="si-btn si-btn-icon si-btn-curser-off si-btn-green"><i class="fa fa-check"></i></button>
             <button v-if="item.status == 3" class="si-btn si-btn-icon si-btn-curser-off si-btn-red"><i class="fa fa-ban"></i></button>
           </td>
           <td>{{ item.createdTime }}</td>
@@ -66,6 +87,7 @@
     <div v-if="page == 'form'" class="width-55vw">
       <button class="si-btn si-btn-light" @click="handlerPage()"><i class="fa fa fa-angle-left"></i> Zurück</button>
 
+      <div class="si-hinweis" v-if="hinweisAntragOpen" v-html="hinweisAntragOpen"></div>
 
       <form class="si-form " @submit="handlerSaveForm($event)">
         <ul>
@@ -196,6 +218,8 @@ export default {
 
       list: false,
 
+      hinweisAntragOpen: window.globals.hinweisAntragOpen,
+      hinweisAntragOpenFinish: window.globals.hinweisAntragOpenFinish,
       maxStunden: window.globals.maxStunden,
       stundenVormittag: window.globals.stundenVormittag,
       stundenNachmittag: window.globals.stundenNachmittag,
@@ -326,6 +350,7 @@ export default {
 
     },
     handlerPage(page = 'list') {
+      document.querySelector('#pageWrapper').scrollTo(0,0);
       this.page = page;
     },
     handlerSaveForm(e) {
@@ -356,7 +381,12 @@ export default {
             that.error = '' + response.data.msg;
           } else {
             that.loadList();
-            that.handlerPage();
+
+            if (that.freigabeKL == 1 || that.freigabeSL == 1) {
+              that.handlerPage('finish');
+            } else {
+              that.handlerPage();
+            }
             //data.item.favorite = response.data.favorite;
           }
         } else {

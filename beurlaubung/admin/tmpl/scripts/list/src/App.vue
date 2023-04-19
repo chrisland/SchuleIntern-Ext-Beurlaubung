@@ -13,7 +13,7 @@
           <th v-on:click="handlerSort('datumStart')" class="curser-sort" :class="{'text-orange': sort.column == 'datumStart'}">Datum</th>
           <th v-on:click="handlerSort('userID')" class="curser-sort" :class="{'text-orange': sort.column == 'userID'}">Schüler*in</th>
           <th v-on:click="handlerSort('stunden')" class="curser-sort" :class="{'text-orange': sort.column == 'stunden'}">Stunden</th>
-          <th >Begründung</th>
+          <th width="30%" >Begründung</th>
           <th v-on:click="handlerSort('status')" class="curser-sort" :class="{'text-orange': sort.column == 'status'}">Genehmigung</th>
           <th></th>
         </tr>
@@ -23,13 +23,13 @@
             class="">
           <td>{{ item.createdTime }}</td>
           <td>{{ item.datumStart }}<span v-if="item.datumEnde && item.datumEnde != item.datumStart"> - {{ item.datumEnde }}</span></td>
-          <td>{{item.user.name}} <span class="text-small" v-if="item.user.klasse">{{item.user.klasse}}</span></td>
+          <td>{{item.user.name}} <span class="text-small" v-if="item.user.klasse">( {{item.user.klasse}} )</span></td>
           <td>{{ item.stunden }}</td>
           <td>{{ item.info }}</td>
           <td v-if="item.status == 1">
             <button class="si-btn si-btn-off text-orange"><i class="fa fa-question"></i> Offen</button>
           </td>
-          <td v-if="item.status == 2">
+          <td v-if="item.status == 2 || item.status == 21">
             <button class="si-btn si-btn-off text-green"><i class="fa fa-check"></i> Genehmigt</button>
           </td>
           <td v-if="item.status == 3">
